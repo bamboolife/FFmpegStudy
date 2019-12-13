@@ -25,11 +25,22 @@
 ### 裁剪与合并命令
 分解复用命令
 1. 抽取音频流
-> ffmpeg -i input.mp4 -acodec copy -vn out.aac
+```
+ ffmpeg -i input.mp4 -acodec copy -vn out.aac
+```
+|参数       |  说明  |
+|------    |------ :|
+|-acodec   |指定音视频编码器|
+|copy      |指明只拷贝，不做编解码|
+
 2. 抽取视频流
-> ffmpeg -i input.mp4 -vcodec copy -an out.h264
+```
+ ffmpeg -i input.mp4 -vcodec copy -an out.h264
+```
 3. 合成视频
-> ffmpeg -i out.h264 -i out.aac -vcodec copy -acodec copy out.mp4
+```
+ ffmpeg -i out.h264 -i out.aac -vcodec copy -acodec copy out.mp4
+```
 ### 直播命令
 ### 各种滤镜命令
 ### 视频转码
