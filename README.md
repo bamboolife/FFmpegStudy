@@ -41,7 +41,7 @@
     超级关键点5.指定c语言编译器
  22. --enable-cross-compile \
    关键点6.开启交叉编译
-    超级关键7.配置编译环境c语言的头文件环境
+  23. 超级关键7.配置编译环境c语言的头文件环境
     --sysroot=$SYSROOT \
     --extra-cflags="-Os -fpic $OPTIMIZE_CFLAGS" \
     --extra-ldflags="$ADDI_LDFLAGS" \
