@@ -17,6 +17,19 @@
 - Libswresample
 ## 如何使用FFmpeg
 >ffmpeg是由c代码编写而成，功能多，代码量大。代码开源，需要先编译，后使用，编译可以通过makefile语法来进行编译
+## FFmpeg的应用
+- 直播
+音视频会议教育直播，娱乐、游戏类直播
+- 短视频
+抖音、微视、火山小视频
+- 网络视频
+爱奇艺、优酷、腾讯视频
+- 音视频通话
+微信、qq、facedbook
+- 视频监控
+幼儿园、保安
+- 人工智能
+人脸识别，智能印象
 ## FFmpeg常用命令
 ### 基本信息查询命令
 ### 录制命令
@@ -33,6 +46,29 @@
 | -i | 输入路径和名称以及各式mpg |
 | -desktop | 告诉ffmpeg我们录的是屏幕，而不是一个窗口（可以录制一个窗口，不过得用窗口的ID）|
 ### 处理原始数据命令
+>定义：获取未经过编码的画像和音频。画面信息（一般是yuv）音频信息是（pcm）
+
+提取YUV数据
+```
+ffmpeg -i input.mp4 -an -c:v rawvideo -pix_fmt yuv420p out.yuv
+```
+| 参数       |  说明  |
+|:------    |:------|
+| -c:v rawvideo   | 指定将视频转成原始数据 |
+| -pixel_format yuv420p | 指定转换各式为yuv420p |
+> 说明：未经过编码的数据的需要用到ffplay播放（ffpeg -s 608*368 out.yuv）
+
+提取PCM数据
+```
+ffmpeg -i input.mp4 -vn -ar 44100 -ac 2 -f s16le out.pcm
+```
+| 参数       |  说明  |
+| ------    | ------:|
+| -ar   | 指定音频采样率44100即为44.1HZ |
+| -ac   | 指定音频声道channel 2为双声道 |
+| -f    | 数据存储各式 s:Sigend有符号的，16：每一个数值用16位表示，l ：little，e：end |
+> 说明：未经过编码的数据需要用到ffplay播放（ffplay -ar 44100 -ac 2 -f s16le out.pcm）
+
 ### 裁剪与合并命令
 分解复用命令
 1. 抽取音频流
@@ -40,14 +76,20 @@
  ffmpeg -i input.mp4 -acodec copy -vn out.aac
 ```
 | 参数       |  说明  |
-| ------    | ------:|
-| -acodec   | 指定音视频编码器 |
+|:------    |:------|
+| -acodec   | 指定音频编码器 |
 | copy      | 指明只拷贝，不做编解码 |
+| -vn       | v代表视频，n代表no也就是无视频的意思 |
 
 2. 抽取视频流
 ```
  ffmpeg -i input.mp4 -vcodec copy -an out.h264
 ```
+| 参数       |  说明  |
+|:------    |:------|
+| -vcodec   | 指定视频编码器 |
+| copy      | 指明只拷贝，不做编解码 |
+| -an       | a代表音频，n代表no也就是无音频的意思 |
 3. 合成视频
 ```
  ffmpeg -i out.h264 -i out.aac -vcodec copy -acodec copy out.mp4
