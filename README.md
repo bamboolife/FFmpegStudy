@@ -24,7 +24,7 @@
  ffmpeg -f gdigrab -framerate 30 -offset_y 0 -video_size 1920x1080 -i desktop out.mpg
 ```
 | 参数       |  说明  |
-| ------    | ------:|
+|:------    |:------|
 | -gdigrad   | 表明我们是通过gdi抓屏的方式；（mac下 avfoundation） |
 | -framerate 30 | 表示我录制的帧率为30 |
 | -offset_x | 左上偏移量x |
