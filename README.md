@@ -32,6 +32,23 @@
 人脸识别，智能印象
 ## FFmpeg常用命令
 ### 基本信息查询命令
+| 参数       |  说明  |
+|:------    |:------|
+|-version | 显示版本 |
+|-demuxers  | 显示可用的demuxers |
+|-muxers | 显示可用的muxers |
+|-devices | 显示可用的设备 |
+|-codecs | 显示可用的编码器 |
+|-decoders | 显示所有的编码器 |
+|-bsfs | 显示比特流filter |
+|-formats | 显示可用的格式 |
+|-protocos | 显示可用的过滤器 |
+|-pix_fmts | 显示可用的像素格式 |
+|-sample_fmts | 显示可用的采样格式 |
+|-layouts | 显示channel名称 |
+|-colors | 显示识别的颜色名称 |
+|-filters | 显示可用的过滤器 |
+
 ### 录制命令
 ```
  ffmpeg -f gdigrab -framerate 30 -offset_y 0 -video_size 1920x1080 -i desktop out.mpg
