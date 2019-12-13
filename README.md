@@ -1,8 +1,39 @@
 # FFmpegStudy
+## 什么是FFmpeg
+- ffmpeg是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序
+- ffmpeg是一个多媒体视频处理工具，有非常强大的功能包括视频的采集功能、视频格式转化、视频抓图、给视频添加水印等
+## FFmpeg组成
+### FFmpeg工具
+- ffmpeg
+- ffplay
+- ffprobe
+### FFmpeg开发库
+- Libavcodec
+- Libavutil
+- Libavformat
+- Libavdevice
+- Libavfilter
+- Libswscale
+- Libswresample
+## 如何使用FFmpeg
+>ffmpeg是由c代码编写而成，功能多，代码量大。代码开源，需要先编译，后使用，编译可以通过makefile语法来进行编译
+## FFmpeg常用命令
+### 基本信息查询命令
+### 录制命令
+> ffmpeg -f gdigrab -framerate 30 -offset_y 0 -video_size 1920x1080 -i desktop out.mpg
+### 处理原始数据命令
+### 裁剪与合并命令
+### 直播命令
+### 各种滤镜命令
+### 视频转码
+```
+ffmpeg -i out.mp4 -vcodec copy -acodec copy intput.flv
+```
+
 ### 下载FFmpeg源码和ndk
 ### 环境配置
 ### 编译FFmpeg源码 生成Android需要的动态库或静态库
-#### FFmpeg编译选项说明
+### FFmpeg编译选项说明
  1. --prefix 
   &emsp;&emsp; 指定输出目录
  2. --enable-small
