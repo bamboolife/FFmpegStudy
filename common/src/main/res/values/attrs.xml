@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--底部导航控制器-->
+    <declare-styleable name="MainNavigateTabBar">
+        <attr name="navigateTabTextColor" format="color|reference" />
+        <attr name="navigateTabSelectedTextColor" format="color|reference" />
+        <attr name="containerId" format="integer|reference" />
+        <attr name="navigateTabTextSize" format="dimension|reference" />
+    </declare-styleable>
+
+
+    <declare-styleable name="XEditText">
+        <attr name="x_separator" format="string" />
+        <attr name="x_disableClear" format="boolean" />
+        <attr name="x_clearDrawable" format="reference" />
+        <attr name="x_showPwdDrawable" format="reference" />
+        <attr name="x_hidePwdDrawable" format="reference" />
+        <attr name="x_disableEmoji" format="boolean" />
+        <attr name="x_disableTogglePwdDrawable" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="CircleImageView">
+        <attr name="border_width" format="dimension" />
+        <attr name="border_color2" format="color" />
+    </declare-styleable>
+</resources>

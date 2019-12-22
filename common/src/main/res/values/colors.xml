@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="lighter_gray">#ddd</color>
+    <color name="darker_gray">#aaa</color>
+    <color name="tab_text_normal">#212121</color>
+</resources>
