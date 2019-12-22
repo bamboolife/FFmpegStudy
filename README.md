@@ -73,7 +73,7 @@ ffmpeg -i input.mp4 -an -c:v rawvideo -pix_fmt yuv420p out.yuv
 |:------    |:------|
 | -c:v rawvideo   | 指定将视频转成原始数据 |
 | -pixel_format yuv420p | 指定转换各式为yuv420p |
-> 说明：未经过编码的数据的需要用到ffplay播放（ffpeg -s 608*368 out.yuv）
+> 说明：未经过编码的数据的需要用到ffplay播放（ffplay -s 608*368 out.yuv）
 
 提取PCM数据
 ```
