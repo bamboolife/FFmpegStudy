@@ -166,3 +166,5 @@ ffmpeg -i out.mp4 -vcodec copy -acodec copy intput.flv
     --extra-ldflags="$ADDI_LDFLAGS" \
     $ADDITIONAL_CONFIGURE_FLAG
 ### 创建Android studio ndk项目引入ffmpeg库 配置ffmpeg开发环境 
+
+### FFmpeg视频解码过程
