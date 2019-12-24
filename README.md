@@ -168,3 +168,15 @@ ffmpeg -i out.mp4 -vcodec copy -acodec copy intput.flv
 ### 创建Android studio ndk项目引入ffmpeg库 配置ffmpeg开发环境 
 
 ### FFmpeg视频解码过程
+
+通常来说，FFmpeg的视频解码过程有以下几个步骤：
+
+1. 注册所支持的所有的文件（容器）格式及其对应的CODEC av_register_all()
+2. 打开文件 avformat_open_input()
+3. 从文件中提取流信息 avformat_find_stream_info()
+4. 在多个数据流中找到视频流 video stream（类型为MEDIA_TYPE_VIDEO）
+5. 查找video stream 相对应的解码器 avcodec_find_decoder
+6. 打开解码器 avcodec_open2()
+7. 为解码帧分配内存 av_frame_alloc()
+8. 从流中读取读取数据到Packet中 av_read_frame()
+9. 对video 帧进行解码，调用 avcodec_decode_video2()
