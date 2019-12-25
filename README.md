@@ -4,17 +4,17 @@
 - ffmpeg是一个多媒体视频处理工具，有非常强大的功能包括视频的采集功能、视频格式转化、视频抓图、给视频添加水印等
 ## FFmpeg组成
 ### FFmpeg工具
-- ffmpeg
-- ffplay
-- ffprobe
+- ffmpeg 操纵、转换和流传输多媒体内容的命令行工具箱
+- ffplay 简约的多媒体播放器
+- ffprobe 检查多媒体内容的简单分析工具 
 ### FFmpeg开发库
-- Libavcodec
-- Libavutil
-- Libavformat
-- Libavdevice
-- Libavfilter
-- Libswscale
-- Libswresample
+- Libavcodec 提供广泛的编解码器实现
+- Libavutil hashers、decompressors 和 miscellaneous utility functions 实现
+- Libavformat 流协议、容器格式和基本 I / O 访问实现
+- Libavdevice 访问捕获和播放设备抽象化实现
+- Libavfilter 解码的音频和视频过滤修饰实现
+- Libswscale  光色转换和程序缩放实现
+- Libswresample 音频混合和程序重采样实现
 ## 如何使用FFmpeg
 >ffmpeg是由c代码编写而成，功能多，代码量大。代码开源，需要先编译，后使用，编译可以通过makefile语法来进行编译
 ## FFmpeg的应用
@@ -166,3 +166,18 @@ ffmpeg -i out.mp4 -vcodec copy -acodec copy intput.flv
     --extra-ldflags="$ADDI_LDFLAGS" \
     $ADDITIONAL_CONFIGURE_FLAG
 ### 创建Android studio ndk项目引入ffmpeg库 配置ffmpeg开发环境 
+
+### FFmpeg视频解码过程
+4.0及以后 API变动很大具体请看官网案例 目前4.0 还支持以前的方式。
+
+通常来说，FFmpeg的视频解码过程有以下几个步骤：
+
+1. 注册所支持的所有的文件（容器）格式及其对应的CODEC `av_register_all()` 此函数在
+2. 打开文件 `avformat_open_input()`
+3. 从文件中提取流信息 `avformat_find_stream_info()`
+4. 在多个数据流中找到视频流 video stream（类型为MEDIA_TYPE_VIDEO）
+5. 查找video stream 相对应的解码器 `avcodec_find_decoder`
+6. 打开解码器 `avcodec_open2()`
+7. 为解码帧分配内存 `av_frame_alloc()`
+8. 从流中读取读取数据到Packet中 `av_read_frame()`
+9. 对video 帧进行解码，调用 `avcodec_decode_video2()`
