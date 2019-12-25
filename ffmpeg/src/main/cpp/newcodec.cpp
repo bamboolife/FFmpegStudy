@@ -25,9 +25,9 @@ Java_com_sundy_ffmpeg_VideoCodec_newdecode(JNIEnv *env, jobject thiz, jstring in
                                            jstring outputurl) {
     AVFormatContext *formatContext;
     //解码视频的地址
-    char *input_str;
+    char input_str[500];
     //解码后文件的存放地址
-    char *output_str;
+    char output_str[500];
     //打开文件标识
     int result=-1;
     //查找视频流标识

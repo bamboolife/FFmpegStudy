@@ -15,7 +15,6 @@ add_library(
 find_library(
         log-lib
         log)
-
 #set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/../../../libs)
 #添加其他预编译库方式1（推荐使用）
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}")

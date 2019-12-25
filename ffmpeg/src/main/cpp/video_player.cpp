@@ -6,6 +6,7 @@
 #include "logutil.h"
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
+#include <unistd.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,178 +17,173 @@ extern "C" {
 #include "libavutil/imgutils.h"
 #include "libavutil/time.h"
 //播放倍率
-float play_rate = 1;
-//视频总时长
-int64_t duration = 0;
 JNIEXPORT jint JNICALL
-Java_com_sundy_ffmpeg_VideoPlayer_play(JNIEnv *env, jobject thiz, jstring file_path,
+Java_com_sundy_ffmpeg_VideoPlayer_play(JNIEnv *env, jobject thiz, jstring videoPath,
                                        jobject surface) {
-//    const  char *input_path;
-//     input_path=env->GetStringUTFChars(file_path,NULL);
-    char *input_path;
-    sprintf(input_path,"%s",env->GetStringUTFChars(file_path,NULL));
-    //第一步老版本 需要先注册  现在不需要了 可以直接打开文件
-    AVFormatContext *avFormatContext;
-    if(avformat_open_input(&avFormatContext,input_path,NULL,NULL)!=0){
-        LOGD("文件打开失败.\n");
-        return -1;
-    }
-    //第二步查找视频流
-    //说明：在一些格式当中没有头部信息，如flv格式，h264格式，这个时候调用avformat_open_input()
-    // 在打开文件之后就没有参数，也就无法获取到里面的信息。这个时候就可以调用此函数，因为它会试着去
-    // 探测文件的格式，但是如果格式当中没有头部信息，那么它只能获取到编码、宽高这些信息，还是无法获得
-    // 总时长。如果总时长无法获取到，则仍需要把整个文件读一遍，计算一下它的总帧数。
-    if(avformat_find_stream_info(avFormatContext,NULL)<0){
-        LOGD("Couldn't find stream infomation.\n");
-        return -1;
-    }
-    //获取视频总时长
-    if(avFormatContext->duration!=AV_NOPTS_VALUE){
-       duration=(avFormatContext->duration/AV_TIME_BASE);
-      // LOGD("duration=%ld",duration);
-    }
-    //第三部查找视频解码器
-    //1查找视频流索引位置：第一帧
-    int video_stream_index=-1;
-    for (int i = 0; i <avFormatContext->nb_streams ; ++i) {
-         //判断流的类型
-         AVMediaType mediaType=avFormatContext->streams[i]->codecpar->codec_type;
-         if(mediaType==AVMEDIA_TYPE_VIDEO){
-             //视频流
-             video_stream_index=i;
-         }
-    }
-
-    //2根据视频流索引，获取codecpar
-     AVCodecParameters *avCodecParameters=avFormatContext->streams[video_stream_index]->codecpar;
-   // 根据codecpar，获得解码器ID
-    enum AVCodecID avCodecId= avCodecParameters->codec_id;
-    //根据解码器id，查找解码器
-    AVCodec *codec=  avcodec_find_decoder(avCodecId);
-    if (codec==NULL){
-        LOGD("Couldn't find Codec.\n");
-        return -1;
-    }
-    //第四部 打开解码器
-    //1获取编码器上下文
-    AVCodecContext *avCodecContext=avcodec_alloc_context3(codec);
-    if(avCodecContext==NULL){
-        LOGD("create codecContext is false");
-        return -1;
-    }
-    //2将codecpar转成AVCodecContext 数据填充
-    avcodec_parameters_to_context(avCodecContext,avCodecParameters);
-    //3开始打开解码器
-    if(avcodec_open2(avCodecContext,codec,NULL)!=0){
-        LOGD("Couldn't open codec.\n");
-        return -1;
-    }
-    LOGD("decdec name=%s",codec->name);
-    //第五步 读取视频压缩数据->循环读取
-    //1 实例化封装格式上下文 pkt:一帧的压缩数据
-    AVPacket *avPacket=(AVPacket *)av_malloc(sizeof(AVPacket));
-    //2分配一个AVFrom:用于存放解码之后的像素数据
-    AVFrame *avFrame=av_frame_alloc();
-    //初始化一个SwsContext
-    // 原始数据
-    // scrW: 原始格式宽度
-    // scrH: 原始格式高度
-    // scrFormat: 原始数据格式
-    // 目标数据
-    // dstW: 目标格式宽度
-    // dstH: 目标格式高度
-    // dstFormat: 目标数据格式
-    // 当遇到Assertion desc failed at src/libswscale/swscale_internal.h:668
-    // 这个问题就是获取元数据的高度有问题
-    struct SwsContext *swsContext=sws_getContext(avCodecParameters->width,
-                                                 avCodecParameters->height,
-                                                 avCodecContext->pix_fmt,
-                                                 avCodecParameters->width,
-                                                 avCodecParameters->height,
-                                                 AV_PIX_FMT_RGBA,
-                                                 SWS_BILINEAR,NULL,NULL,NULL);
-    AVFrame * avFrameRGBA=av_frame_alloc();
-    //给缓冲区设置类型->AV_PIX_FMT_RGBA类型
-    //得到RGBA缓冲区大小
-    // av_image_get_buffer_size(enum AVPixelFormat pix_fmt, int width, int height, int align)
-    //pix_fmt: 视频像素数据格式类型->AV_PIX_FMT_RGBA格式
-    //width: 一帧视频像素数据宽 = 视频宽
-    //height: 一帧视频像素数据高 = 视频高
-    //align: 字节对齐方式->默认是1
-    // buffer中数据用于渲染,且格式为RGBA
-    int buffer_size = av_image_get_buffer_size(AV_PIX_FMT_RGBA,
-                                               avCodecContext->width,
-                                               avCodecContext->height,
-                                               1);
-    //  开辟一块内存空间
-    uint8_t *out_buffer = (uint8_t *)av_malloc(buffer_size);
-    av_image_fill_arrays(avFrameRGBA->data,
-                         avFrameRGBA->linesize,
-                         out_buffer,
-                         AV_PIX_FMT_RGBA,
-                         avCodecContext->width,
-                         avCodecContext->height,
-                         1);
-
-    // 获取native window
-    ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
-    //视频缓冲区
-    ANativeWindow_Buffer windowBuffer;
-    int frameFinished;
-    int count;
-    while (av_read_frame(avFormatContext,avPacket)>=0){
-        //判断是不是视频
-        if(avPacket->stream_index==video_stream_index){
-            avcodec_send_packet(avCodecContext,avPacket);
-            //解码
-            frameFinished=avcodec_receive_frame(avCodecContext,avFrame);
-            if(frameFinished==0){
-                // 设置native window的buffer大小,可自动拉伸
-              ANativeWindow_setBuffersGeometry(nativeWindow,avCodecParameters->width,avCodecParameters->height,WINDOW_FORMAT_RGBA_8888);
-              //开始绘制
-              //先锁定画布
-              ANativeWindow_lock(nativeWindow,&windowBuffer,0);
-              //转换指定格式
-              sws_scale(swsContext,(const uint8_t *const *)avFrame->data,
-                      avFrame->linesize,0,avCodecContext->height,
-                      avFrameRGBA->data,avFrameRGBA->linesize);
-               //获取stride
-               //拿到画布的首地址void *dst=window_buffer->bits;
-               //the actual bits 实际位置
-               uint8_t  *dst= static_cast<uint8_t *>(windowBuffer.bits);
-               //拿到一行有多少个像素 ARGBS*4
-               //内存地址
-               int destStride=windowBuffer.stride*4;
-               //像素数据的首地址
-               uint8_t  *src=avFrameRGBA->data[0];
-               //实际数据在内存中一行的数据量
-               int srcStride=avFrameRGBA->linesize[0];
-                for (int i = 0; i <avCodecParameters->height ; ++i) {
-                    memcpy(dst+i*destStride,src+i*srcStride,srcStride);
-                }
-
-                ANativeWindow_unlockAndPost(nativeWindow);
-               //保证每秒60针
-               av_usleep(1000*16);
-               count++;
-               LOGD("当前的帧=%d", count);
-            }
-
+    const char* path = env->GetStringUTFChars(videoPath, 0);
+    //分配结构体
+    AVFormatContext *formatContext = avformat_alloc_context();
+    //打开视频数据源。由于Android 对SDK存储权限的原因，如果没有为当前项目赋予SDK存储权限，打开本地视频文件时会失败
+    int open_state = avformat_open_input(&formatContext, path, NULL, NULL);
+    if (open_state < 0) {
+        char errbuf[128];
+        if (av_strerror(open_state, errbuf, sizeof(errbuf)) == 0){
+            LOGD("打开视频输入流信息失败，失败原因： %s", errbuf);
         }
-        av_packet_free(&avPacket);
+        return -1;
     }
-    //第六步
+    //为分配的AVFormatContext 结构体中填充数据
+    if (avformat_find_stream_info(formatContext, NULL) < 0) {
+        LOGD("读取输入的视频流信息失败。");
+        return -1;
+    }
+    int video_stream_index = -1;//记录视频流所在数组下标
+    LOGD("当前视频数据，包含的数据流数量：%d", formatContext->nb_streams);
+    //找到"视频流".AVFormatContext 结构体中的nb_streams字段存储的就是当前视频文件中所包含的总数据流数量——
+    //视频流，音频流，字幕流
+    for (int i = 0; i < formatContext->nb_streams; i++) {
 
-    av_frame_free(&avFrame);
-    av_frame_free(&avFrameRGBA);
-    free(out_buffer);
-    avcodec_close(avCodecContext);
-    avformat_free_context(avFormatContext);
+        //如果是数据流的编码格式为AVMEDIA_TYPE_VIDEO——视频流。
+        if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            video_stream_index = i;//记录视频流下标
+            break;
+        }
+    }
+    if (video_stream_index == -1) {
+        LOGD("没有找到 视频流。");
+        return -1;
+    }
+    //通过编解码器的id——codec_id 获取对应（视频）流解码器
+    AVCodecParameters *codecParameters=formatContext->streams[video_stream_index]->codecpar;
+    AVCodec *videoDecoder = avcodec_find_decoder(codecParameters->codec_id);
 
-    free(swsContext);
-    free(&windowBuffer);
+    if (videoDecoder == NULL) {
+        LOGD("未找到对应的流解码器。");
+        return -1;
+    }
+    //通过解码器分配(并用  默认值   初始化)一个解码器context
+    AVCodecContext *codecContext = avcodec_alloc_context3(videoDecoder);
+
+    if (codecContext == NULL) {
+        LOGD("分配 解码器上下文失败。");
+        return -1;
+    }
+    //更具指定的编码器值填充编码器上下文
+    if(avcodec_parameters_to_context(codecContext,codecParameters)<0){
+        LOGD("填充编解码器上下文失败。");
+        return -1;
+    }
+    //通过所给的编解码器初始化编解码器上下文
+    if (avcodec_open2(codecContext, videoDecoder, NULL) < 0) {
+        LOGD("初始化 解码器上下文失败。");
+        return -1;
+    }
+    //输出视频信息
+    LOGE("视频的文件格式：%s",formatContext->iformat->name);
+    LOGE("视频时长：%d", (formatContext->duration)/1000000);
+    LOGE("视频的宽高：%d,%d",codecContext->width,codecContext->height);
+    LOGE("解码器的名称：%s",videoDecoder->name);
+    AVPixelFormat dstFormat = AV_PIX_FMT_RGBA;
+    //分配存储压缩数据的结构体对象AVPacket
+    //如果是视频流，AVPacket会包含一帧的压缩数据。
+    //但如果是音频则可能会包含多帧的压缩数据
+    AVPacket *packet = av_packet_alloc();
+    //分配解码后的每一数据信息的结构体（指针）
+    AVFrame *frame = av_frame_alloc();
+    //分配最终显示出来的目标帧信息的结构体（指针）
+    AVFrame *outFrame = av_frame_alloc();
+    uint8_t *out_buffer = (uint8_t *) av_malloc(
+            (size_t) av_image_get_buffer_size(dstFormat, codecContext->width, codecContext->height,
+                                              1));
+    //更具指定的数据初始化/填充缓冲区
+    av_image_fill_arrays(outFrame->data, outFrame->linesize, out_buffer, dstFormat,
+                         codecContext->width, codecContext->height, 1);
+    //初始化SwsContext
+    SwsContext *swsContext = sws_getContext(
+            codecContext->width   //原图片的宽
+            ,codecContext->height  //源图高
+            ,codecContext->pix_fmt //源图片format
+            ,codecContext->width  //目标图的宽
+            ,codecContext->height  //目标图的高
+            ,dstFormat,SWS_BICUBIC
+            , NULL, NULL, NULL
+    );
+    if(swsContext==NULL){
+        LOGD("swsContext==NULL");
+        return -1;
+    }
+    //Android 原生绘制工具
+    ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env,surface);;
+    //定义绘图缓冲区
+    ANativeWindow_Buffer outBuffer;
+    //通过设置宽高限制缓冲区中的像素数量，而非屏幕的物流显示尺寸。
+    //如果缓冲区与物理屏幕的显示尺寸不相符，则实际显示可能会是拉伸，或者被压缩的图像
+    ANativeWindow_setBuffersGeometry(nativeWindow, codecContext->width, codecContext->height,
+                                     WINDOW_FORMAT_RGBA_8888);
+    //循环读取数据流的下一帧
+    while (av_read_frame(formatContext, packet) == 0) {
+
+        if (packet->stream_index == video_stream_index) {
+            //讲原始数据发送到解码器
+            int sendPacketState = avcodec_send_packet(codecContext, packet);
+            if (sendPacketState == 0) {
+                int receiveFrameState = avcodec_receive_frame(codecContext, frame);
+                if (receiveFrameState == 0) {
+                    //锁定窗口绘图界面
+                    ANativeWindow_lock(nativeWindow, &outBuffer, NULL);
+                    //对输出图像进行色彩，分辨率缩放，滤波处理
+                    sws_scale(swsContext, (const uint8_t *const *) frame->data, frame->linesize, 0,
+                              frame->height, outFrame->data, outFrame->linesize);
+                    uint8_t *dst = (uint8_t *) outBuffer.bits;
+                    //解码后的像素数据首地址
+                    //这里由于使用的是RGBA格式，所以解码图像数据只保存在data[0]中。但如果是YUV就会有data[0]
+                    //data[1],data[2]
+                    uint8_t *src = outFrame->data[0];
+                    //获取一行字节数
+                    int oneLineByte = outBuffer.stride * 4;
+                    //复制一行内存的实际数量
+                    int srcStride = outFrame->linesize[0];
+                    for (int i = 0; i < codecContext->height; i++) {
+                        memcpy(dst + i * oneLineByte, src + i * srcStride, srcStride);
+                    }
+                    //解锁
+                    ANativeWindow_unlockAndPost(nativeWindow);
+                    //进行短暂休眠。如果休眠时间太长会导致播放的每帧画面有延迟感，如果短会有加速播放的感觉。
+                    //一般一每秒60帧——16毫秒一帧的时间进行休眠
+                    usleep(1000 * 20);//20毫秒
+
+                } else if (receiveFrameState == AVERROR(EAGAIN)) {
+                    LOGD("从解码器-接收-数据失败：AVERROR(EAGAIN)");
+                } else if (receiveFrameState == AVERROR_EOF) {
+                    LOGD("从解码器-接收-数据失败：AVERROR_EOF");
+                } else if (receiveFrameState == AVERROR(EINVAL)) {
+                    LOGD("从解码器-接收-数据失败：AVERROR(EINVAL)");
+                } else {
+                    LOGD("从解码器-接收-数据失败：未知");
+                }
+            } else if (sendPacketState == AVERROR(EAGAIN)) {//发送数据被拒绝，必须尝试先读取数据
+                LOGD("向解码器-发送-数据包失败：AVERROR(EAGAIN)");//解码器已经刷新数据但是没有新的数据包能发送给解码器
+            } else if (sendPacketState == AVERROR_EOF) {
+                LOGD("向解码器-发送-数据失败：AVERROR_EOF");
+            } else if (sendPacketState == AVERROR(EINVAL)) {//遍解码器没有打开，或者当前是编码器，也或者需要刷新数据
+                LOGD("向解码器-发送-数据失败：AVERROR(EINVAL)");
+            } else if (sendPacketState == AVERROR(ENOMEM)) {//数据包无法压如解码器队列，也可能是解码器解码错误
+                LOGD("向解码器-发送-数据失败：AVERROR(ENOMEM)");
+            } else {
+                LOGD("向解码器-发送-数据失败：未知");
+            }
+        }
+        av_packet_unref(packet);
+    }
+    //内存释放
     ANativeWindow_release(nativeWindow);
-    env->ReleaseStringUTFChars(file_path,input_path);
+    av_frame_free(&outFrame);
+    av_frame_free(&frame);
+    av_packet_free(&packet);
+    avcodec_free_context(&codecContext);
+    avformat_close_input(&formatContext);
+    avformat_free_context(formatContext);
+    env->ReleaseStringUTFChars(videoPath,path);
     return 0;
 }
 

@@ -18,7 +18,6 @@
         <activity android:name=".VideoPlayActivity"></activity>
         <activity android:name=".AudioActivity" />
         <activity android:name=".PushStreamActivity" />
-        <activity android:name=".StreamActivity" />
         <activity android:name=".VideoCodecActivity" />
         <activity android:name=".FilterActivity" />
         <activity android:name=".FFmpegInfoActivity" />

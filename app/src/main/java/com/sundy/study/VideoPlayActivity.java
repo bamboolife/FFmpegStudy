@@ -1,11 +1,13 @@
 package com.sundy.study;
 
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Button;
+import android.widget.VideoView;
 
 import com.sundy.common.base.BaseActivity;
 import com.sundy.ffmpeg.VideoPlayer;
@@ -35,6 +37,7 @@ public class VideoPlayActivity extends BaseActivity implements SurfaceHolder.Cal
     protected void initViews(Bundle savedInstanceState) {
         mVideoPlayer=new VideoPlayer();
        mSurfaceHolder=   mSurfaceView.getHolder();
+       mSurfaceHolder.setFormat(PixelFormat.RGBA_8888);
        mSurfaceHolder.addCallback(this);
 
     }
@@ -65,7 +68,7 @@ public class VideoPlayActivity extends BaseActivity implements SurfaceHolder.Cal
                 mVideoPlayer.play(videoPath,mSurfaceHolder.getSurface());
 
             }
-        });
+        }).start();
 
     }
 }

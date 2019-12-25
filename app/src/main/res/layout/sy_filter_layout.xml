@@ -5,5 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.sundy.study.FilterActivity">
+   <com.sundy.study.view.MyVideView
+       android:id="@+id/videoView"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"/>
 
+    <Button
+        android:id="@+id/start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="start"
+        tools:layout_editor_absoluteX="174dp"
+        tools:layout_editor_absoluteY="85dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
