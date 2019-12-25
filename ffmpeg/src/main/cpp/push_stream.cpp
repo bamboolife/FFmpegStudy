@@ -44,7 +44,7 @@ Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring input
 
 
     //FFmpeg av_log() callback
-    av_log_set_callback(custom_log);
+   // av_log_set_callback(custom_log);
 
     //注册所有组件
     av_register_all();

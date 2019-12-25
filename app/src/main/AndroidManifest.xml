@@ -15,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".AudioActivity"></activity>
+        <activity android:name=".VideoPlayActivity"></activity>
+        <activity android:name=".AudioActivity" />
         <activity android:name=".PushStreamActivity" />
         <activity android:name=".StreamActivity" />
         <activity android:name=".VideoCodecActivity" />

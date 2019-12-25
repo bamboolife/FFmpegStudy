@@ -19,4 +19,6 @@ public class VideoCodec {
      * @return
      */
     public native int decode(String inputurl, String outputurl);
+
+    public native int newdecode(String inputurl, String outputurl);
 }

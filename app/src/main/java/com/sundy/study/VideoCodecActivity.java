@@ -15,7 +15,7 @@ import butterknife.OnClick;
 public class VideoCodecActivity extends BaseActivity {
     // String folderurl = Environment.getExternalStorageDirectory().getPath() + "/Movies/";
     String folderurl = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/test.mp4";
-    String outPath = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/test.mp4";
+    String outPath = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera/test.yuv";
     @BindView(R2.id.text_label1)
     TextView textLabel1;
     @BindView(R2.id.input_url)
@@ -47,6 +47,6 @@ public class VideoCodecActivity extends BaseActivity {
         String inputPath = inputUrl.getText().toString();
         String outputPath = outputUrl.getText().toString();
 
-        mVideoCodec.decode(inputPath, outputPath);
+        mVideoCodec.newdecode(inputPath, outputPath);
     }
 }

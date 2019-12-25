@@ -44,7 +44,7 @@ public class VideoTranscoderActivity extends BaseActivity {
         List<VideoOperationEntity> items=new ArrayList<>();
         items.add(new VideoOperationEntity("视频解码",VideoCodecActivity.class));
         items.add(new VideoOperationEntity("本地推流",PushStreamActivity.class));
-        items.add(new VideoOperationEntity("视频转码",FFmpegInfoActivity.class));
+        items.add(new VideoOperationEntity("最简单的视频播放",VideoPlayActivity.class));
         items.add(new VideoOperationEntity("视频剪切",FFmpegInfoActivity.class));
         items.add(new VideoOperationEntity("视频截图",FFmpegInfoActivity.class));
         items.add(new VideoOperationEntity("视频水印",FFmpegInfoActivity.class));
