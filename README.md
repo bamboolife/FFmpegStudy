@@ -9,14 +9,20 @@
 - ffprobe 检查多媒体内容的简单分析工具 
 ### FFmpeg开发库
 - Libavcodec 提供广泛的编解码器实现
-- Libavutil hashers、decompressors 和 miscellaneous utility functions 实现
-- Libavformat 流协议、容器格式和基本 I / O 访问实现
-- Libavdevice 访问捕获和播放设备抽象化实现
+- Libavutil hashers、decompressors 和 miscellaneous utility functions 实现，是基础公共模块，各个类库都会依赖于它
+- Libavformat 流协议、容器格式和基本 I / O 访问实现，依赖于libavcodec
+- Libavdevice 访问捕获和播放设备抽象化实现，作用于设备层。
 - Libavfilter 解码的音频和视频过滤修饰实现
 - Libswscale  光色转换和程序缩放实现
 - Libswresample 音频混合和程序重采样实现
+>ibswscale，libswresample，libavfilter作用于原始数据层。
 ## 如何使用FFmpeg
 >ffmpeg是由c代码编写而成，功能多，代码量大。代码开源，需要先编译，后使用，编译可以通过makefile语法来进行编译
+#### 一部分是library
+- 直接调用生成的静态库或动态库，c语言的文件
+- API 都是在library ，如果直接调 api 来操作视音频的话，就需要写c或者c++了
+#### 一部分是 Tool
+- 使用的是命令行，则不需要自己去编码来实现视频操作的流程，实际上tool就是把命令行转换为api的操作，不需要使用者懂C++
 ## FFmpeg的应用
 - 直播
 音视频会议教育直播，娱乐、游戏类直播
