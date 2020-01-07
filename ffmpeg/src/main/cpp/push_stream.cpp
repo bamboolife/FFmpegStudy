@@ -3,6 +3,7 @@
 //
 #include <jni.h>
 #include "logutil.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,7 +27,7 @@ void custom_log(void *ptr, int level, const char *fmt, va_list vl) {
 
 JNIEXPORT jint JNICALL
 Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring inputurl,
-                                         jstring outputurl) {
+                                        jstring outputurl) {
     AVOutputFormat *ofmt = NULL;
     AVFormatContext *ifmt_ctx = NULL, *ofmt_ctx = NULL;
     AVPacket pkt;
@@ -44,10 +45,10 @@ Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring input
 
 
     //FFmpeg av_log() callback
-   // av_log_set_callback(custom_log);
+    // av_log_set_callback(custom_log);
 
     //注册所有组件
-    av_register_all();
+    // av_register_all();
     //初始化网络
     avformat_network_init();
 
@@ -64,8 +65,9 @@ Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring input
 
 
     for (i = 0; i < ifmt_ctx->nb_streams; i++) {
+        AVCodecParameters *avCodecParameters = ifmt_ctx->streams[i]->codecpar;
         //找到视频流
-        if (ifmt_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+        if (avCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO) {
             videoindex = i;
             break;
         }
@@ -83,23 +85,34 @@ Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring input
 
     //根据输入流来创建输出流
     for (i = 0; i < ifmt_ctx->nb_streams; i++) {
+        AVCodecParameters *avCodecParameters=ifmt_ctx->streams[i]->codecpar;
+        AVCodecContext *avCodecContext=avcodec_alloc_context3(NULL);
+        avcodec_parameters_to_context(avCodecContext,avCodecParameters);
         //Create output AVStream according to input AVStream
-        AVStream *in_stream = ifmt_ctx->streams[i];
-        AVStream *out_stream = avformat_new_stream(ofmt_ctx, in_stream->codec->codec);
+        //AVStream *in_stream = ifmt_ctx->streams[i];
+
+        AVStream *out_stream = avformat_new_stream(ofmt_ctx, avCodecContext->codec);
         if (!out_stream) {
             LOGE("Failed allocating output stream\n");
             ret = AVERROR_UNKNOWN;
             goto end;
         }
         //复制封装格式上下文
-        ret = avcodec_copy_context(out_stream->codec, in_stream->codec);
+//        AVCodecContext *avCodecContext;
+//        AVCodecParameters *avCodecParameters=ifmt_ctx->streams[i]->codecpar;
+//        avcodec_parameters_to_context(avCodecContext,avCodecParameters);
+       // ret = avcodec_copy_context(out_stream->codec, in_stream->codec);
+        ret = avcodec_parameters_from_context(out_stream->codecpar,avCodecContext);
         if (ret < 0) {
             LOGE("Failed to copy context from input to output stream codec context\n");
             goto end;
         }
-        out_stream->codec->codec_tag = 0;
+        AVCodecParameters *outParameter=ofmt_ctx->streams[i]->codecpar;
+        AVCodecContext *outCodecContext=avcodec_alloc_context3(NULL);
+        avcodec_parameters_to_context(outCodecContext,outParameter);
+        outCodecContext->codec_tag = 0;
         if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER) {
-            out_stream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+           outCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         }
     }
     //封装格式
@@ -176,8 +189,8 @@ Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring input
             break;
         }
         //释放包数据内存
-        av_free_packet(&pkt);
-
+        //av_free_packet(&pkt);
+        av_packet_unref(&pkt);
     }
     //写文件尾
     av_write_trailer(ofmt_ctx);

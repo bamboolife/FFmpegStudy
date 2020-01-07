@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-AUX_SOURCE_DIRECTORY(. DIRSRCS)
 
+AUX_SOURCE_DIRECTORY(. DIRSRCS)
+aux_source_directory(ffmpeg TOOLSOURCE)
+list(APPEND DIRSRCS ${TOOLSOURCE})
 #C 的编译选项是 CMAKE_C_FLAGS
 # 指定编译参数，可选
 #SET(CMAKE_CXX_FLAGS "-Wno-error=format-security -Wno-error=pointer-sign")
@@ -12,13 +14,13 @@ add_library(
 
         SHARED
         ${DIRSRCS})
+
 find_library(
         log-lib
         log)
 #set(JNI_LIBS_DIR ${CMAKE_SOURCE_DIR}/../../../libs)
 #添加其他预编译库方式1（推荐使用）
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}")
-
 
 #添加其他与编译库方式2（练习时可以尝试）
 #add_library(avutil
@@ -71,7 +73,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/../../../libs/${AN
 #        PROPERTIES IMPORTED_LOCATION
 #        ${JNI_LIBS_DIR}/${ANDROID_ABI}/libavdevice.so )
 
-include_directories(include/)
+include_directories(. include ffmpeg)
 
 
 target_link_libraries( # Specifies the target library.

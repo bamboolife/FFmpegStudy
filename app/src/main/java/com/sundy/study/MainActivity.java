@@ -41,6 +41,7 @@ public class MainActivity extends BaseActivity {
     protected void initViews(Bundle savedInstanceState) {
         requestPermission(Permission.Group.STORAGE);
         requestPermission(Permission.RECORD_AUDIO);
+        requestPermission(Permission.CAMERA);
         mAdapter=new FunctionAdapter(getDatas());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(mContext,DividerItemDecoration.HORIZONTAL));
