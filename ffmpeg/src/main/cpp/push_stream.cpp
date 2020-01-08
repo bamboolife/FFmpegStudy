@@ -115,6 +115,8 @@ Java_com_sundy_ffmpeg_PushStream_stream(JNIEnv *env, jobject thiz, jstring input
            outCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         }
     }
+    //检查一遍我们的输出
+    av_dump_format(ofmt_ctx,0,output_str,0);
     //封装格式
     ofmt = ofmt_ctx->oformat;
     //打开输出文件/URL
