@@ -49,6 +49,13 @@ typedef struct AVRational{
   - int64_t pts：显示时间戳
   - int64_t dts：解码时间戳
   - int stream_index：标识该AVPacket所属的视频/音频流。
+  
+### FFmpeg推流流程
+![image](https://github.com/bamboolife/FFmpegStudy/blob/master/images/stream.png)
+
+### 方法结构流向图
+![image](https://github.com/bamboolife/FFmpegStudy/blob/master/images/stream2.png)
+
 
 
 
